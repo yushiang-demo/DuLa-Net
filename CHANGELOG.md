@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 
 ### Added
 
+- Panorama pre-process from [HorizonNet](https://github.com/sunset1995/HorizonNet). (https://github.com/yushiang-demo/DuLa-Net/pull/1)
+
 ### Changed
 
 ### Fixed
