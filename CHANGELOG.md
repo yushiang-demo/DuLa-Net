@@ -7,6 +7,8 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 
 ### Added
 
+- Update packages and add `Dockerfile`, `requirements` to freeze versions. (https://github.com/yushiang-demo/DuLa-Net/pull/2)
+
 ### Changed
 
 ### Fixed
