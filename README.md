@@ -21,6 +21,10 @@ The pretrained models are trained on our Realtor360 dataset with different backb
 
 The input panorama should be already aligned with the Manhattan World. We recommand you using the [PanoBasic] in Matlab or the python implementation [here]. Those tool can help you do the pre-processing to align the panorama.
 
+```
+python preprocess.py --img_glob assets/raw/panorama.jpg --output_dir assets/preprocessed/
+```
+
 ## Predict
 
 Then using below command to load the pretrained model and predict the 3D layout.
