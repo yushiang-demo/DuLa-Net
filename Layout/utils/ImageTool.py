@@ -50,7 +50,7 @@ def imageResize(data, size):
 
 def imageDilation(data, rad):
 
-    ans = np.zeros(data.shape, dtype=np.float)
+    ans = np.zeros(data.shape, dtype=float)
     if data.ndim >= 3:
         for i in range(data.shape[2]):
             channel = data[:,:,i]
@@ -64,7 +64,7 @@ def imageDilation(data, rad):
 
 def imageGaussianBlur(data, sigma):
 
-    ans = np.zeros(data.shape, dtype=np.float)
+    ans = np.zeros(data.shape, dtype=float)
     if data.ndim >= 3:
         for i in range(data.shape[2]):
             channel = data[:,:,i]
