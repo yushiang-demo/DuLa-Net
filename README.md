@@ -31,6 +31,9 @@ Then using below command to load the pretrained model and predict the 3D layout.
 
 ```
 python demo.py --input figs\001.jpg
+
+# with docker
+docker run --rm --gpus all dula-net demo.py --input figs\001.jpg
 ```
 <img src='figs/001.jpg' width=50%><img src='figs/001_vis.jpg' width=50%>
 

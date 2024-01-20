@@ -21,16 +21,16 @@ class E2P(nn.Module):
         self.gpu = gpu
 
         R_lst = []
-        theta_lst = np.array([-90, 0, 90, 180], np.float) / 180 * np.pi
-        phi_lst = np.array([90, -90], np.float) / 180 * np.pi
+        theta_lst = np.array([-90, 0, 90, 180], float) / 180 * np.pi
+        phi_lst = np.array([90, -90], float) / 180 * np.pi
 
         for theta in theta_lst:
-            angle_axis = theta * np.array([0, 1, 0], np.float)
+            angle_axis = theta * np.array([0, 1, 0], float)
             R = cv2.Rodrigues(angle_axis)[0]
             R_lst.append(R)
 
         for phi in phi_lst:
-            angle_axis = phi * np.array([1, 0, 0], np.float)
+            angle_axis = phi * np.array([1, 0, 0], float)
             R = cv2.Rodrigues(angle_axis)[0]
             R_lst.append(R)
 
@@ -59,11 +59,11 @@ class E2P(nn.Module):
 
         interval = w_len / (out_dim - 1)
         
-        z_map = np.zeros([out_dim, out_dim], np.float32) + radius
+        z_map = np.zeros([out_dim, out_dim], float) + radius
         x_map = np.tile((np.arange(out_dim) - c_x) * interval, [out_dim, 1])
         y_map = np.tile((np.arange(out_dim) - c_y) * interval, [out_dim, 1]).T
         D = np.sqrt(x_map**2 + y_map**2 + z_map**2)
-        xyz = np.zeros([out_dim, out_dim, 3], np.float)
+        xyz = np.zeros([out_dim, out_dim, 3], float)
         xyz[:, :, 0] = (radius / D) * x_map[:, :]
         xyz[:, :, 1] = (radius / D) * y_map[:, :]
         xyz[:, :, 2] = (radius / D) * z_map[:, :]
@@ -95,8 +95,8 @@ class E2P(nn.Module):
         down_views = []
         for i in range(batch_size):
             up_coor, down_coor = self.loc
-            up_view = F.grid_sample(batch[i:i+1], up_coor)
-            down_view = F.grid_sample(batch[i:i+1], down_coor)
+            up_view = F.grid_sample(batch[i:i+1], up_coor, align_corners = True)
+            down_view = F.grid_sample(batch[i:i+1], down_coor, align_corners = True)
             up_views.append(up_view)
             down_views.append(down_view)
         up_views = torch.cat(up_views, dim=0)
