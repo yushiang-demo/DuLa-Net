@@ -12,6 +12,31 @@ By this repo you can estimate the 3D room layout from a single indoor RGB panora
 - OpenCV-Python
 - Pillow / scikit-image
 
+## Quick start
+
+- Install packages
+
+```
+# https://pytorch.org/
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+
+pip install --no-cache-dir -r requirements.txt
+```
+
+- Start redis, celery and api server
+
+```
+docker run --rm -p 6379:6379 --name my-redis-container redis:latest
+
+# For window
+celery -A tasks worker --pool=solo -l info
+
+#　Unix-like systems
+celery -A tasks worker --loglevel=info
+
+python .\server.py
+```
+
 ## Pretrained Model
 
 First, please download the [pretrained models] and copy to ./Model/ckpt/ \
