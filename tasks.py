@@ -94,3 +94,10 @@ def inference(image_data_base64, output, seed=224, backbone='resnet18',ckpt = '.
     vis.save(os.path.join(output,"vis.jpg"))
     Layout.saveSceneAsJson(os.path.join(output,"layout.json"), scene_pred)
     return output
+
+def inferenceFromFile(file, output):
+    pil_image = Image.open(io.BytesIO(file.read()))
+    img_bytes = io.BytesIO()
+    pil_image.save(img_bytes, format='JPEG')
+    img_base64 = base64.b64encode(img_bytes.getvalue()).decode()
+    inference.delay(img_base64, output)
