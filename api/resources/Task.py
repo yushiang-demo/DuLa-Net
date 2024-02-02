@@ -5,39 +5,36 @@ from api.constant import STATIC_FOLDER
 
 from api.app import api
 
+from flask import request
 from flask_restx import Resource
+from api.models import Request, Task
 
-from flask_restx import fields, reqparse
+input = Request()
+input.addFile(name='file',required=True)
 
-upload_data_model = api.model('UploadData', {
-    'uuid': fields.String(description='Uploaded uuid')
-})
-upload_response_model = api.model('UploadResponse', {
-    'data': fields.Nested(upload_data_model , description='Data container for upload response')
-})
-
-upload_parser = reqparse.RequestParser(bundle_errors=True)
-upload_parser.add_argument(
-    'file',
-    required=True,
-    type=reqparse.FileStorage,
-    location='files'
-)
 
 class Task(Resource):
-    @api.expect(upload_parser)
-    @api.marshal_with(upload_response_model)
+    @api.expect(input.parser)
+    @api.marshal_with(Task)
     def post(self):
         """Create a task"""
-        args = upload_parser.parse_args()
+        args = input.parser.parse_args()
         file = args.file
-
         if file:
 
             id = str(uuid.uuid4())      
             output = os.path.join(STATIC_FOLDER, id)
             os.makedirs(output)
             inferenceFromFile(file, output)
-            return { 'data': {'uuid': id}}, 201
+    
+            output = {
+                'uuid': id,
+                'images':{
+                    'origin': f"http://localhost/files/storage/{id}/image.jpg",
+                    'preview': f"http://localhost/files/storage/{id}/vis.jpg",
+                    'aligned': f"http://localhost/files/storage/{id}/raw.jpg",
+                }
+            }
+            return output, 200
         else:
             return {}, 400

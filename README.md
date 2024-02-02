@@ -28,10 +28,11 @@ pip install torch torchvision torchaudio --index-url https://download.pytorch.or
 pip install --no-cache-dir -r requirements.txt
 ```
 
-- Start redis, celery and api server
+- Start nginx, redis, celery and api server
 
 ```
-docker run --rm -p 6379:6379 --name my-redis-container redis:latest
+# nginx, redis
+docker-compose up
 
 # For window
 celery -A tasks worker --pool=solo -l info
