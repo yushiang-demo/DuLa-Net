@@ -8,7 +8,7 @@ api = Api(app, version='1.0', title='DuLa-Net APIs', prefix='/api', base_url='/a
 
 import traceback
 # Global error handler for all other exceptions
-@api.errorhandler(Exception)
+@app.errorhandler(Exception)
 def handle_unexpected_error(error):
     # Log the error for debugging purposes
     app.logger.error('Unhandled Exception: %s', traceback.format_exc())
