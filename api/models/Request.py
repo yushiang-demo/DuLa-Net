@@ -11,3 +11,6 @@ class Request():
             type=reqparse.FileStorage,
             location='files'
         )
+    
+    def addString(self, name, required):
+        self.parser.add_argument(name, type=str, required=required)
