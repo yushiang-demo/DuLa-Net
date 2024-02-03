@@ -96,7 +96,7 @@ def inference(image_data_base64, output, seed=224, backbone='resnet18',ckpt = '.
     Layout.saveSceneAsJson(os.path.join(output,"layout.json"), scene_pred)
     return output
 
-def inferenceFromFile(file, output):
+def inference_from_file(file, output):
     pil_image = Image.open(io.BytesIO(file.read()))
     img_bytes = io.BytesIO()
     pil_image.save(img_bytes, format='JPEG')

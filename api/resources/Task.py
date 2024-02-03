@@ -1,6 +1,6 @@
 import os
 import uuid
-from tasks import inferenceFromFile
+from tasks import inference_from_file
 from api.constant import STATIC_FOLDER
 
 from api.app import api
@@ -25,14 +25,14 @@ class Task(Resource):
             id = str(uuid.uuid4())      
             output = os.path.join(STATIC_FOLDER, id)
             os.makedirs(output)
-            inferenceFromFile(file, output)
-    
+            inference_from_file(file, output)
+
             output = {
                 'uuid': id,
                 'images':{
-                    'origin': f"http://localhost/files/storage/{id}/image.jpg",
-                    'preview': f"http://localhost/files/storage/{id}/vis.jpg",
-                    'aligned': f"http://localhost/files/storage/{id}/raw.jpg",
+                    'origin': f"{request.referrer}files/storage/{id}/image.jpg",
+                    'preview': f"{request.referrer}files/storage/{id}/vis.jpg",
+                    'aligned': f"{request.referrer}files/storage/{id}/raw.jpg",
                 }
             }
             return output, 200
