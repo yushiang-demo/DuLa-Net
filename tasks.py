@@ -22,7 +22,8 @@ from Preprocess.pano_lsd_align import panoEdgeDetection, rotatePanorama
 
 import base64
 
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+gpu = False
+device = torch.device('cuda' if torch.cuda.is_available() and gpu else 'cpu')
 
 def preprocess(img, q_error=0.7, refine_iter=3):
     img_ori = np.array(img.resize((1024, 512),  Image.Resampling.BICUBIC))[..., :3]
@@ -49,7 +50,7 @@ def predict(model, img):
 
     [fp, fc, h] = model(color)
 
-    e2p = E2P(cf.pano_size, cf.fp_size, cf.fp_fov)
+    e2p = E2P(cf.pano_size, cf.fp_size, cf.fp_fov, gpu=gpu)
     [fc_up, fc_down] = e2p(fc)
 
     [fp, fc_up, fc_down, h] = Utils.var2np([fp, fc_up, fc_down, h])
@@ -68,8 +69,8 @@ def predict(model, img):
 
 from celery import Celery
 
-BROKER_URL = 'redis://localhost:6379/0'
-BACKEND_URL = 'redis://localhost:6379/0'
+BROKER_URL = 'redis://redis:6379/0'
+BACKEND_URL = 'redis://redis:6379/0'
 app = Celery('tasks', broker=BROKER_URL, backend=BACKEND_URL)
 
 @app.task
@@ -79,7 +80,7 @@ def inference(image_data_base64, output, seed=224, backbone='resnet18',ckpt = '.
     np.random.seed(seed)
     torch.manual_seed(seed)
 
-    model = DuLaNet(backbone).to(device)
+    model = DuLaNet(backbone,gpu=gpu).to(device)
 
     #model.load_state_dict(torch.load(args.ckpt))
     model.load_state_dict(torch.load(ckpt, map_location=str(device)))

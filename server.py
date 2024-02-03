@@ -12,4 +12,4 @@ task = api.namespace('task', description='Run a DuLa-Net task.')
 task.add_resource(Task,'/')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', debug=True)

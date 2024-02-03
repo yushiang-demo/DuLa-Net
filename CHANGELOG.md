@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 
 - Panorama pre-process from [HorizonNet](https://github.com/sunset1995/HorizonNet). (https://github.com/yushiang-demo/DuLa-Net/pull/1)
 - Update packages and add `Dockerfile`, `requirements` to freeze versions. (https://github.com/yushiang-demo/DuLa-Net/pull/2)
-- Initialize api server with swagger ui. (https://github.com/yushiang-demo/DuLa-Net/pull/3)
+- Implement api server. (https://github.com/yushiang-demo/DuLa-Net/pull/3)
 
 ### Changed
 
