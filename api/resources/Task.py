@@ -1,7 +1,7 @@
 import os
 import uuid
 from tasks import inference_from_file
-from api.constant import STATIC_FOLDER
+from api.constant import STATIC_FOLDER, TASK_STATUS
 
 from api.app import api, db
 
@@ -27,7 +27,16 @@ class Task(Resource):
     @api.expect(delReq.parser)
     @api.marshal_with(Task)
     def delete(self):
-        return None
+        args = getReq.parser.parse_args()
+        id = args.id
+        success = db.updateTask(id, {
+            'status': TASK_STATUS.REMOVED,
+        })
+        
+        if success:
+            return db.getTask(id), 200
+        else:
+            abort(400,message=f'Task {id} not found')
 
     @api.expect(getReq.parser)
     @api.marshal_with(Task, code=200)
@@ -35,15 +44,38 @@ class Task(Resource):
         args = getReq.parser.parse_args()
         id = args.id
         task = db.getTask(id)
-        if task:
-            return task, 200
+        if task :
+            if task['status'] == TASK_STATUS.DONE:
+                return task, 200
+            else:
+                return abort(400, message=f'Task {id} is not ready.')
         else:
             abort(400, message=f'Task {id} not found')
 
     @api.expect(putReq.parser)
     @api.marshal_with(Task)
     def put(self):
-        return None
+        args = putReq.parser.parse_args()
+        file = args.file
+        id = args.id
+
+        task = db.getTask(id)
+
+        if task:
+            isReady = db.updateTask(id, {
+                'status': TASK_STATUS.PROCESSING,
+            })
+            if isReady:                
+                output = os.path.join(STATIC_FOLDER, id)
+                inference_from_file(file, output, id)
+                output = {
+                    '_id': id
+                }
+                return output, 200
+            else:
+                return abort(400, message=f'Task {id} is not ready.')
+        else:
+            abort(400, message=f'Task {id} not found')
 
     @api.expect(postReq.parser)
     @api.marshal_with(Task)

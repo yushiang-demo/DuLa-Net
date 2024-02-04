@@ -74,6 +74,7 @@ BACKEND_URL = 'redis://redis:6379/0'
 app = Celery('tasks', broker=BROKER_URL, backend=BACKEND_URL)
 
 from mongodb.app import db
+from api.constant import TASK_STATUS
 import json
 
 @app.task
@@ -102,9 +103,12 @@ def inference(image_data_base64, output, id, seed=224, backbone='resnet18',ckpt 
     with open(json_file_path, 'r') as file:
         json_data = json.load(file)
         db.updateTask(id, {
-            'status': 'done',
             'layout': json_data
         })
+        if db.getTask(id):
+            db.updateTask(id, {
+                'status': TASK_STATUS.DONE,
+            })
 
     return output
 
