@@ -31,6 +31,32 @@ services:
     depends_on:
       - redis
 
+  prometheus:
+    image: prom/prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+  flower:
+    build:
+      dockerfile: Dockerfile
+    command: celery -A tasks flower
+    ports:
+      - 5555:5555
+    volumes:
+      - ./:/app
+    depends_on:
+      - worker
+      - redis
+
   mongo:
     image: mongo
     restart: always
