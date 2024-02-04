@@ -1,52 +1,72 @@
 # APIs
 
 
-## Quick start
+## Quick Start
 
-- Start services `docker-compose up -d`
-- Shutdown services `docker-compose down`
-- Check services is alive `docker ps`
-- Build Dockerfile if changed `docker-compose build`
-- Get logs `docker-compose logs -f ${server, worker}`
+1. Start services: `docker-compose up -d`
+2. Explore API details on Swagger UI at [http://localhost](http://localhost).
+3. Inspect MongoDB at [http://localhost/mongoadmin](http://localhost/mongoadmin). (Password is in the `docker-compose.yml` file.)
 
-## Workflow
+### Useful Commands:
 
-Explore detailed information about the APIs in the Swagger UI documentation, accessible at http://localhost. The Swagger UI provides a comprehensive overview of the available APIs, including endpoints, methods, and detailed descriptions to assist you in understanding and interacting with the application.
+- Shutdown services: `docker-compose down`
+- Check service status: `docker ps`
+- Build Dockerfile if changed: `docker-compose build`
+- View logs: `docker-compose logs -f ${server, worker}`
+- Restart services: `docker-compose restart`
 
-In this repository, we've concentrated on building the AI service segment shown in the diagram below.
+## Docker Volumes
+
+- Find result data in the `assets/storage` directory.
+- Database data is stored in the `db` directory.
+
+
+## API Endpoints
+
+- **GET /api/admin/tasks**: Retrieve all tasks.
+- **GET /api/task**: Retrieve a specific task.
+- **DELETE /api/task**: Mark a task as deleted.
+- **POST /api/task**: Execute a task.
+- **PUT /api/task**: Update a task result with a new image.
+
+## Dataflow
 
 ```mermaid
 sequenceDiagram
 
-    box User
-    participant Frontend
-    participant Data-Server
-    end 
+    participant User
     
-    box AI-Service
-    participant AI-Server
-    participant DuLa-Net
+    box DuLaNet-Service
+    participant Flask
+    participant Mongo
+    participant Celery
     participant Storage
     end
 
-    Frontend->>+AI-Server: POST Task: { image, callbackURL(optional) }
-    AI-Server ->>+ Storage: Create Folder: { id }
-    Storage->>- AI-Server: Success
-    AI-Server-->> Data-Server: Callback to update: { id, status:"initial" }
-    AI-Server->> Frontend: Success: { id }
-    AI-Server->>+DuLa-Net: Schedule Task: { id, image }
-    DuLa-Net->>+Storage: Store Result: { id, image, result, metadata }
-    Storage->>- DuLa-Net: Success
-    DuLa-Net->>- AI-Server: Task Done: { result, status }
-    AI-Server-->>- Data-Server: Callback to update: { id, result, status:"done" }
+    User->>+Flask: POST/PUT Task: { id, image, callback }
 
-    Frontend->>+Data-Server: GET Task: { id }
-    Data-Server->>-Frontend: { result, status }
+    opt New Task (param wo/ id)
+    Flask ->>+ Mongo: Create Document: { status:"PROCESSING"}
+    Mongo ->>- Flask: Success { id }
+    Flask ->>+ Storage: Create Folder: { id }
+    Storage->>- Flask: Success
+    end
 
-    Frontend->>+AI-Server: Get Task: { id }
-    AI-Server->>+Storage: Serve Static Files: { id }
-    Storage->>-AI-Server: Success
-    AI-Server->>-Frontend: Success: { id, links }
+    Flask->>+Celery: Schedule Task: { id, image, callback }
+    Flask->>- User: Success: { id }
+    Celery->>+Storage: Store Result: { id, image, result, metadata }
+    Storage->>- Celery: Success
+    Celery->> Mongo: { id, status:"DONE", layout}
+    Celery-->>- User: Callback : { id, result, status }
+
+
+    User->>+Flask: Get Task: { id }
+    Flask->>+Mongo: Query DB: { id }
+    Mongo->>-Flask: Success: { id, data }
+    Flask->>-User: Success: { id, data }
+
+    User->>+Storage: Get Image: { link }
+    Storage->>-User: Success
 ```
 
 

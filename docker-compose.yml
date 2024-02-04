@@ -30,3 +30,27 @@ services:
       - ./:/app
     depends_on:
       - redis
+
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./db:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    environment:
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: example
+      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
+      ME_CONFIG_SITE_BASEURL: /mongoadmin
+    depends_on:
+      - mongo

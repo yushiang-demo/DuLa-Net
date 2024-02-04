@@ -73,8 +73,12 @@ BROKER_URL = 'redis://redis:6379/0'
 BACKEND_URL = 'redis://redis:6379/0'
 app = Celery('tasks', broker=BROKER_URL, backend=BACKEND_URL)
 
+from mongodb.app import db
+from api.constant import TASK_STATUS
+import json
+
 @app.task
-def inference(image_data_base64, output, seed=224, backbone='resnet18',ckpt = './Model/ckpt/res18_realtor.pkl'):
+def inference(image_data_base64, output, id, seed=224, backbone='resnet18',ckpt = './Model/ckpt/res18_realtor.pkl'):
 
     # initialize DuLa-net
     np.random.seed(seed)
@@ -93,12 +97,24 @@ def inference(image_data_base64, output, seed=224, backbone='resnet18',ckpt = '.
     pil_image.save(os.path.join(output,"raw.jpg"))
     img.save(os.path.join(output,"image.jpg"))
     vis.save(os.path.join(output,"vis.jpg"))
-    Layout.saveSceneAsJson(os.path.join(output,"layout.json"), scene_pred)
+    json_file_path = os.path.join(output,"layout.json")
+    Layout.saveSceneAsJson(json_file_path, scene_pred)
+
+    with open(json_file_path, 'r') as file:
+        json_data = json.load(file)
+        db.updateTask(id, {
+            'layout': json_data
+        })
+        if db.getTask(id):
+            db.updateTask(id, {
+                'status': TASK_STATUS.DONE,
+            })
+
     return output
 
-def inference_from_file(file, output):
+def inference_from_file(file, output, id):
     pil_image = Image.open(io.BytesIO(file.read()))
     img_bytes = io.BytesIO()
     pil_image.save(img_bytes, format='JPEG')
     img_base64 = base64.b64encode(img_bytes.getvalue()).decode()
-    inference.delay(img_base64, output)
+    inference.delay(img_base64, output, id)
