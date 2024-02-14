@@ -14,6 +14,8 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 
 ### Changed
 
+- Refactor celery worker with callback when task complete. (https://github.com/yushiang-demo/DuLa-Net/pull/7)
+
 ### Fixed
 
 ### Removed
