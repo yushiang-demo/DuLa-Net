@@ -16,6 +16,12 @@ services:
     build:
       dockerfile: Dockerfile
     command: python server.py
+    environment:
+      - BROKER_URL=redis://redis:6379/0
+      - BACKEND_URL=redis://redis:6379/0
+      - APP_NAME=worker
+      - TASK_NAME=inference
+      - CALLBACK_URL=http://server:5000/api/admin/task
     volumes:
       - ./:/app
     depends_on:
@@ -25,7 +31,12 @@ services:
   worker:
     build:
       dockerfile: Dockerfile
-    command: celery -A tasks worker --loglevel=info
+    command: celery -A worker worker --loglevel=info
+    environment:
+      - BROKER_URL=redis://redis:6379/0
+      - BACKEND_URL=redis://redis:6379/0
+      - APP_NAME=worker
+      - TASK_NAME=inference
     volumes:
       - ./:/app
     depends_on:

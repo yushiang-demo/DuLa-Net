@@ -11,5 +11,5 @@ COPY . /app
 
 RUN pip install --no-cache-dir --upgrade pip
 
-#RUN pip install torch torchvision torchaudio matplotlib scikit-image opencv-python pylsd-nova==1.2.0 Celery redis Flask Flask-RESTx pymongo
+#RUN pip install torch torchvision torchaudio matplotlib scikit-image opencv-python pylsd-nova==1.2.0 Celery redis requests Flask Flask-RESTx pymongo
 RUN pip install --no-cache-dir -r requirements.txt

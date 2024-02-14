@@ -86,6 +86,8 @@ def saveSceneAsJson(path, scene):
                          ensure_ascii=False)
         outfile.write(to_unicode(str_))
 
+    return data
+
 def loadLabelByJson(path, scene):
 
     with open(path) as f:

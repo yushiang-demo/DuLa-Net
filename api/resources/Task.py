@@ -1,6 +1,6 @@
 import os
 import uuid
-from tasks import inference_from_file
+from worker_helper import inference_from_file
 from api.constant import STATIC_FOLDER, TASK_STATUS
 
 from api.app import api, db
