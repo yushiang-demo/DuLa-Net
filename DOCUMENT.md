@@ -1,72 +1,78 @@
-# APIs
-
-
-## Quick Start
-
-1. Start services: `docker-compose up -d`
-2. Explore API details on Swagger UI at [http://localhost](http://localhost).
-3. Inspect MongoDB at [http://localhost/mongoadmin](http://localhost/mongoadmin). (Password is in the `docker-compose.yml` file.)
-
-### Useful Commands:
-
-- Shutdown services: `docker-compose down`
-- Check service status: `docker ps`
-- Build Dockerfile if changed: `docker-compose build`
-- View logs: `docker-compose logs -f ${server, worker}`
-- Restart services: `docker-compose restart`
-
-## Docker Volumes
-
-- Find result data in the `assets/storage` directory.
-- Database data is stored in the `db` directory.
-
-
-## API Endpoints
-
-- **GET /api/admin/tasks**: Retrieve all tasks.
-- **GET /api/task**: Retrieve a specific task.
-- **DELETE /api/task**: Mark a task as deleted.
-- **POST /api/task**: Execute a task.
-- **PUT /api/task**: Update a task result with a new image.
+# How to use
 
 ## Dataflow
 
 ```mermaid
 sequenceDiagram
 
-    participant User
-    
-    box DuLaNet-Service
-    participant Flask
-    participant Mongo
-    participant Celery
-    participant Storage
+    participant Server
+    participant Redis
+    participant Worker
+
+    Server->>Redis: Enqueue a task { id, base64_image, callback_url }
+    Worker->>Redis: Pick up task
+    opt callback_url is defined
+      Worker->>Server: PUT callback_url { id, base64_images, layout }
     end
-
-    User->>+Flask: POST/PUT Task: { id, image, callback }
-
-    opt New Task (param wo/ id)
-    Flask ->>+ Mongo: Create Document: { status:"PROCESSING"}
-    Mongo ->>- Flask: Success { id }
-    Flask ->>+ Storage: Create Folder: { id }
-    Storage->>- Flask: Success
-    end
-
-    Flask->>+Celery: Schedule Task: { id, image, callback }
-    Flask->>- User: Success: { id }
-    Celery->>+Storage: Store Result: { id, image, result, metadata }
-    Storage->>- Celery: Success
-    Celery->> Mongo: { id, status:"DONE", layout}
-    Celery-->>- User: Callback : { id, result, status }
-
-
-    User->>+Flask: Get Task: { id }
-    Flask->>+Mongo: Query DB: { id }
-    Mongo->>-Flask: Success: { id, data }
-    Flask->>-User: Success: { id, data }
-
-    User->>+Storage: Get Image: { link }
-    Storage->>-User: Success
+    Worker->>Redis: Update result
 ```
 
+## Docker-compose
 
+- Run worker with `celery` configs and call from your server.
+
+```yml
+version: '3'
+
+services:
+  redis:
+    image: redis:latest
+
+  server:
+    build:
+      dockerfile: Dockerfile
+    command: python server.py
+    environment:
+      WORKER_BROKER_URL: redis://redis:6379/0
+      WORKER_BACKEND_URL: redis://redis:6379/0
+      WORKER_APP_NAME: worker
+      WORKER_TASK_NAME: inference
+    volumes:
+      - ./:/app
+    depends_on:
+      - redis
+
+
+  worker:
+    image: ghcr.io/yushiang-demo/dula-net-worker:latest
+    command: celery -A worker worker --loglevel=info
+    environment:
+      WORKER_BROKER_URL: redis://redis:6379/0
+      WORKER_BACKEND_URL: redis://redis:6379/0
+      WORKER_APP_NAME: worker
+      WORKER_TASK_NAME: inference
+    depends_on:
+      - redis
+```
+
+## Helpers
+
+- call worker from python
+
+```python
+import os
+import io
+import base64
+from celery import Celery
+
+# init celery
+BROKER_URL = os.environ.get('WORKER_BROKER_URL')
+BACKEND_URL = os.environ.get('WORKER_BACKEND_URL')
+APP_NAME = os.environ.get('WORKER_APP_NAME')
+TASK_NAME = os.environ.get('WORKER_TASK_NAME')
+app = Celery(APP_NAME, broker=BROKER_URL, backend=BACKEND_URL)
+
+# call celery
+def run_task(img_base64, id, callback_url):
+    app.send_task(TASK_NAME, args=[img_base64, id, callback_url])
+```
