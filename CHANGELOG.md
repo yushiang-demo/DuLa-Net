@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 ### Changed
 
 - Refactor celery worker with callback when task complete. (https://github.com/yushiang-demo/DuLa-Net/pull/7)
+- Won't save result to local storage from worker, uses callback body to send data to server. (https://github.com/yushiang-demo/DuLa-Net/pull/8)
 
 ### Fixed
 

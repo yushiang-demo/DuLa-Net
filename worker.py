@@ -70,14 +70,18 @@ def predict(model, img):
 from celery import Celery
 import requests
 
-BROKER_URL = os.environ.get('BROKER_URL')
-BACKEND_URL = os.environ.get('BACKEND_URL')
-APP_NAME = os.environ.get('APP_NAME')
-TASK_NAME = os.environ.get('TASK_NAME')
+BROKER_URL = os.environ.get('WORKER_BROKER_URL')
+BACKEND_URL = os.environ.get('WORKER_BACKEND_URL')
+APP_NAME = os.environ.get('WORKER_APP_NAME')
+TASK_NAME = os.environ.get('WORKER_TASK_NAME')
 app = Celery(APP_NAME, broker=BROKER_URL, backend=BACKEND_URL)
 
+def image_to_base64(image):
+    buffered = io.BytesIO()
+    image.save(buffered, format="JPEG")
+    return base64.b64encode(buffered.getvalue()).decode('utf-8')
 
-def inference(image_data_base64, output, id, callback_url, seed=224, backbone='resnet18',ckpt = './Model/ckpt/res18_realtor.pkl'):
+def inference(image_data_base64, id, callback_url, seed=224, backbone='resnet18',ckpt = './Model/ckpt/res18_realtor.pkl'):
     np.random.seed(seed)
     torch.manual_seed(seed)
 
@@ -88,19 +92,30 @@ def inference(image_data_base64, output, id, callback_url, seed=224, backbone='r
     pil_image = Image.open(io.BytesIO(image_data))
     img = preprocess(pil_image)
     vis, scene_pred = predict(model, img)
-    
-    pil_image.save(os.path.join(output,"raw.jpg"))
-    img.save(os.path.join(output,"image.jpg"))
-    vis.save(os.path.join(output,"vis.jpg"))
-    json_file_path = os.path.join(output,"layout.json")
-    json_data = Layout.saveSceneAsJson(json_file_path, scene_pred)
-    
-    json_data['id'] = id 
-    json_data['path'] = output 
-    
-    headers = {'Content-Type': 'application/json'}
-    response = requests.put(callback_url, json=json_data, headers=headers)
+        
+    payload = {
+        "id": id,
+        "images":{
+            "input": image_to_base64(pil_image),
+            "aligned": image_to_base64(img),
+            "layout": image_to_base64(vis),
+        },
+        "layout": Layout.saveSceneAsJson(None, scene_pred)
+    }
 
-    return response.json()
+    if callback_url:
+        headers = {'Content-Type': 'application/json'}
+        response = requests.put(callback_url, json=payload, headers=headers)
+        return response.json()
+    
+    return payload
 
 app.task(name=TASK_NAME)(inference)
+
+if __name__ == '__main__':
+    pil_image = Image.open('figs/001.jpg')
+    img_bytes = io.BytesIO()
+    pil_image.save(img_bytes, format='JPEG')
+    img_base64 = base64.b64encode(img_bytes.getvalue()).decode()
+    inference(img_base64, 'test', 'http://localhost/api/admin/task')
+    print('ok')
