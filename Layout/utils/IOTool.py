@@ -80,6 +80,9 @@ def saveSceneAsJson(path, scene):
             'layoutWalls':wallsDict,
             'layoutObj2ds':obj2dsDict}
     
+    if path == None:
+        return data
+
     with io.open(path, 'w', encoding='utf8') as outfile:
         str_ = json.dumps(data,
                         indent=4, sort_keys=True,

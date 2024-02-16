@@ -60,7 +60,7 @@ def predict(model, input_path):
     edge = Layout.genLayoutEdgeMap(scene_pred, [512 , 1024, 3], dilat=2, blur=0)
 
     img = img.resize((1024,512))
-    img = np.array(img, np.float32) / 255
+    img = np.array(img, float) / 255
     vis = img * 0.5 + edge * 0.5
 
     vis = Image.fromarray(np.uint8(vis* 255))

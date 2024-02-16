@@ -60,7 +60,7 @@ class DulaNet_Branch(nn.Module):
         return out
     
 class DuLaNet(nn.Module):
-    def __init__(self, backbone):
+    def __init__(self, backbone, gpu=True):
         super(DuLaNet, self).__init__()
 
         self.model_equi = DulaNet_Branch(backbone)
@@ -74,10 +74,10 @@ class DuLaNet(nn.Module):
                     nn.Linear(64, 1)
                 )
         
-        self.e2p = E2P(cf.pano_size, cf.fp_size, cf.fp_fov)
+        self.e2p = E2P(cf.pano_size, cf.fp_size, cf.fp_fov, gpu=gpu)
 
         fuse_dim = [int((cf.pano_size[0]/32)*2**i) for i in range(6)]
-        self.e2ps_f = [E2P((n, n*2), n, cf.fp_fov) for n in fuse_dim]
+        self.e2ps_f = [E2P((n, n*2), n, cf.fp_fov, gpu=gpu) for n in fuse_dim]
 
     def forward(self, pano_view):
 
