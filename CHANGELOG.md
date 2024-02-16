@@ -36,6 +36,6 @@ The format is based on [Keep a Changelog](https://github.com/olivierlacan/keep-a
 - Fork from [SunDaDenny/DuLa-Net](https://github.com/SunDaDenny/DuLa-Net).
 
 
-[unreleased]: https://github.com/yushiang-demo/PanoToMesh/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/yushiang-demo/PanoToMesh/releases/tag/v2.0.0
-[1.0.0]: https://github.com/yushiang-demo/PanoToMesh/releases/tag/v1.0.0
+[unreleased]: https://github.com/yushiang-demo/dula-net-worker/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/yushiang-demo/dula-net-worker/releases/tag/v2.0.0
+[1.0.0]: https://github.com/yushiang-demo/dula-net-worker/releases/tag/v1.0.0
